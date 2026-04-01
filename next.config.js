@@ -37,11 +37,6 @@ const nextConfig = {
       },
     ]
   },
-  webpack: (config, { isServer }) => {
-    config.experiments = {
-      ...config.experiments,
-      asyncIteration: true,
-    }
     return config
   },
 }
