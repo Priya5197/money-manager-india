@@ -10,6 +10,13 @@ import {
   TrendingUp,
   Receipt,
   Settings,
+  Calculator,
+  PiggyBank,
+  Target,
+  BarChart3,
+  Bell,
+  Trophy,
+  IndianRupee,
 } from 'lucide-react';
 
 export default function ProtectedLayout({
@@ -58,6 +65,62 @@ export default function ProtectedLayout({
       label: 'Accounts',
       href: '/accounts',
       icon: <Wallet className="w-5 h-5" />,
+    },
+    // ── Savings & Goals ────────────────────────────────────────────────────────
+    {
+      label: 'Savings Guidance',
+      href: '/savings',
+      icon: <PiggyBank className="w-5 h-5" />,
+    },
+    {
+      label: 'Goals',
+      href: '/goals',
+      icon: <Target className="w-5 h-5" />,
+    },
+    {
+      label: 'Net Worth',
+      href: '/net-worth',
+      icon: <IndianRupee className="w-5 h-5" />,
+    },
+    // ── Calculators ────────────────────────────────────────────────────────────
+    {
+      label: 'Calculators',
+      href: '/calculators',
+      icon: <Calculator className="w-5 h-5" />,
+      submenu: [
+        {
+          label: 'EMI Calculator',
+          href: '/calculators/emi',
+          icon: <Calculator className="w-4 h-4" />,
+        },
+        {
+          label: 'Tax Calculator',
+          href: '/calculators/tax',
+          icon: <BarChart3 className="w-4 h-4" />,
+        },
+        {
+          label: 'Salary Analyser',
+          href: '/calculators/salary',
+          icon: <TrendingUp className="w-4 h-4" />,
+        },
+      ],
+    },
+    // ── Tools ──────────────────────────────────────────────────────────────────
+    {
+      label: 'Bill Reminders',
+      href: '/reminders',
+      icon: <Bell className="w-5 h-5" />,
+    },
+    {
+      label: 'Challenges',
+      href: '/challenges',
+      icon: <Trophy className="w-5 h-5" />,
+    },
+    // ── Reports ────────────────────────────────────────────────────────────────
+    {
+      label: 'Reports',
+      href: '/reports',
+      icon: <BarChart3 className="w-5 h-5" />,
     },
     {
       label: 'Settings',

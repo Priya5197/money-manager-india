@@ -61,17 +61,18 @@ export default function LoginPage() {
           </h2>
 
           {serverError && (
-            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-sm">
+            <div role="alert" className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-sm">
               {serverError}
             </div>
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="login-email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Email address
               </label>
               <input
+                id="login-email"
                 type="email"
                 autoComplete="email"
                 placeholder="you@example.com"
@@ -85,7 +86,7 @@ export default function LoginPage() {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                <label htmlFor="login-password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Password
                 </label>
                 <Link
@@ -96,6 +97,7 @@ export default function LoginPage() {
                 </Link>
               </div>
               <input
+                id="login-password"
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
