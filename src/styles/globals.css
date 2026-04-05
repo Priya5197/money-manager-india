@@ -77,7 +77,7 @@ textarea,
 
 /* Focus ring utilities */
 .focus-ring {
-  @apply outline-none ring-2 ring-offset-2 ring-saffron dark:ring-offset-slate-900;
+  @apply outline-none ring-2 ring-offset-2 ring-saffron-500 dark:ring-offset-slate-900;
 }
 
 /* Loading animation */

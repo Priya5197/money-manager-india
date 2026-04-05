@@ -73,3 +73,4 @@ out
 supabase/.branches
 supabase/.temp
 supabase/seed.sql
+.vercel

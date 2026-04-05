@@ -24,7 +24,18 @@ export * from "@/constants/categories";
 export * from "@/constants/indian-banks";
 
 // Configuration
-export * from "@/config/tax-slabs";
+export {
+  TAX_SLAB_CONFIGS,
+  getTaxSlabConfig,
+  getAvailableFinancialYears,
+  getLatestFinancialYear,
+  getTaxRateForIncome,
+  getSurchargeRate,
+  isSection80DAvailable,
+  compareTaxBrackets,
+  findApplicableBracket,
+} from "@/config/tax-slabs";
+export type { TaxSlab, TaxSlabConfig, SurchargeLimit } from "@/config/tax-slabs";
 
 // Supabase Clients
 export { createClient as createSupabaseClient } from "@/lib/supabase/client";

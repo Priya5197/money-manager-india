@@ -40,9 +40,10 @@ export function exportToCSV<T extends Record<string, unknown>>(
   }
 
   // Prepare CSV data with custom headers if provided
-  const csvData = options?.headers
+  const headers = options?.headers
+  const csvData = headers
     ? data.map((row) =>
-        options.headers.reduce(
+        headers.reduce(
           (acc, header) => ({
             ...acc,
             [header]: row[header] || "",

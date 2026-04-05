@@ -7,12 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
-import { Toast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
 import { COLOR_PRESETS, EMOJI_ICONS } from "@/constants/indian-states";
-import { Trash2, Edit2, Plus, Archive, RotateCcw } from "lucide-react";
+import { Trash2, Edit2, Plus } from "lucide-react";
 
 interface CategoryManagerProps {
   userId: string;
@@ -23,47 +22,33 @@ interface NewCategoryForm {
   type: "income" | "expense";
   icon: string;
   color: string;
-  parentId: string | null;
 }
 
 export const CategoryManager: React.FC<CategoryManagerProps> = ({ userId }) => {
-  const { categories, loading, addCategory, updateCategory, deleteCategory } =
+  const { categories, loading, createCategory, updateCategory, deleteCategory } =
     useCategories(userId);
+  const { addToast } = useToast();
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
-
   const [form, setForm] = useState<NewCategoryForm>({
     name: "",
     type: "expense",
     icon: "💰",
     color: COLOR_PRESETS[0],
-    parentId: null,
   });
-
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  const expenseCategories = categories.filter(
-    (c) => c.type === "expense" && !c.parent_id
-  );
-  const incomeCategories = categories.filter(
-    (c) => c.type === "income" && !c.parent_id
-  );
+  // Filter by type (Category has no parent_id, show all)
+  const expenseCategories = categories.filter((c) => c.type === "expense");
+  const incomeCategories = categories.filter((c) => c.type === "income");
 
   const handleSaveCategory = async () => {
     if (!form.name.trim()) {
-      setToast({
-        type: "error",
-        message: "Category name is required",
-      });
+      addToast({ type: "error", title: "Category name is required" });
       return;
     }
-
     try {
       if (editingId) {
         await updateCategory(editingId, {
@@ -71,113 +56,71 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ userId }) => {
           icon: form.icon,
           color: form.color,
         });
-        setToast({
-          type: "success",
-          message: "Category updated successfully",
-        });
+        addToast({ type: "success", title: "Category updated successfully" });
       } else {
-        await addCategory({
+        await createCategory({
           name: form.name,
           type: form.type,
           icon: form.icon,
           color: form.color,
-          user_id: userId,
+          userId,
+          isDefault: false,
         });
-        setToast({
-          type: "success",
-          message: "Category created successfully",
-        });
+        addToast({ type: "success", title: "Category created successfully" });
       }
-
       resetForm();
       setShowModal(false);
-    } catch (error) {
-      setToast({
-        type: "error",
-        message: "Failed to save category",
-      });
-    }
-  };
-
-  const handleArchiveCategory = async (id: string, isArchived: boolean) => {
-    try {
-      await updateCategory(id, {
-        is_archived: !isArchived,
-      });
-      setToast({
-        type: "success",
-        message: isArchived ? "Category restored" : "Category archived",
-      });
-    } catch (error) {
-      setToast({
-        type: "error",
-        message: "Failed to update category",
-      });
+    } catch {
+      addToast({ type: "error", title: "Failed to save category" });
     }
   };
 
   const handleDeleteCategory = async (id: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this category? This cannot be undone."
-      )
-    ) {
+    if (!confirm("Are you sure you want to delete this category? This cannot be undone.")) {
       return;
     }
-
     try {
       await deleteCategory(id);
-      setToast({
-        type: "success",
-        message: "Category deleted successfully",
-      });
-    } catch (error) {
-      setToast({
-        type: "error",
-        message: "Failed to delete category",
-      });
+      addToast({ type: "success", title: "Category deleted successfully" });
+    } catch {
+      addToast({ type: "error", title: "Failed to delete category" });
     }
   };
 
-  const handleEditCategory = (category: any) => {
+  const handleEditCategory = (category: { id: string; name: string; type: "income" | "expense"; icon?: string; color?: string }) => {
     setForm({
       name: category.name,
       type: category.type,
-      icon: category.icon,
-      color: category.color,
-      parentId: category.parent_id,
+      icon: category.icon ?? "💰",
+      color: category.color ?? COLOR_PRESETS[0],
     });
     setEditingId(category.id);
     setShowModal(true);
   };
 
   const resetForm = () => {
-    setForm({
-      name: "",
-      type: "expense",
-      icon: "💰",
-      color: COLOR_PRESETS[0],
-      parentId: null,
-    });
+    setForm({ name: "", type: "expense", icon: "💰", color: COLOR_PRESETS[0] });
     setEditingId(null);
   };
 
-  const CategoryList = ({ categories, type }: any) => (
+  const CategoryList = ({
+    categories: cats,
+    type,
+  }: {
+    categories: typeof categories;
+    type: "income" | "expense";
+  }) => (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-        {type === "expense" ? "Expense Categories" : "Income Categories"} (
-        {categories.length})
+        {type === "expense" ? "Expense Categories" : "Income Categories"} ({cats.length})
       </h3>
       <div className="space-y-2">
-        {categories.map((category: any) => (
+        {cats.map((category) => (
           <div
             key={category.id}
             className={cn(
               "flex items-center justify-between p-3 rounded-lg border",
-              "hover:bg-gray-50 dark:hover:bg-gray-900/50",
-              category.is_archived
-                ? "bg-gray-100 dark:bg-gray-900/30 opacity-60"
-                : ""
+              "hover:bg-gray-50 dark:hover:bg-gray-900/50"
             )}
           >
             <div className="flex items-center gap-3 flex-1">
@@ -187,16 +130,16 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ userId }) => {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     {category.name}
                   </p>
-                  {category.is_archived && (
+                  {category.isDefault && (
                     <Badge variant="secondary" className="text-xs">
-                      Archived
+                      Default
                     </Badge>
                   )}
                 </div>
               </div>
               <div
                 className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: category.color }}
+                style={{ backgroundColor: category.color ?? "#888" }}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -208,32 +151,20 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ userId }) => {
               >
                 <Edit2 className="w-4 h-4" />
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() =>
-                  handleArchiveCategory(category.id, category.is_archived)
-                }
-                className="h-8 w-8 p-0"
-              >
-                {category.is_archived ? (
-                  <RotateCcw className="w-4 h-4" />
-                ) : (
-                  <Archive className="w-4 h-4" />
-                )}
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => handleDeleteCategory(category.id)}
-                className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              {!category.isDefault && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleDeleteCategory(category.id)}
+                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
         ))}
-        {categories.length === 0 && (
+        {cats.length === 0 && (
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
             No {type === "expense" ? "expense" : "income"} categories
           </p>
@@ -267,7 +198,6 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ userId }) => {
             Add Category
           </Button>
         </div>
-
         <div className="space-y-6">
           <CategoryList categories={expenseCategories} type="expense" />
           <div className="border-t dark:border-gray-800" />
@@ -275,11 +205,14 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ userId }) => {
         </div>
       </Card>
 
+      {/* Modal uses 'open' + 'onOpenChange' (not isOpen/onClose) */}
       <Modal
-        isOpen={showModal}
-        onClose={() => {
-          setShowModal(false);
-          resetForm();
+        open={showModal}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setShowModal(false);
+            resetForm();
+          }
         }}
         title={editingId ? "Edit Category" : "Add New Category"}
       >
@@ -300,15 +233,17 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ userId }) => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Type
               </label>
+              {/* Select uses options[] + onValueChange (not children + onChange) */}
               <Select
                 value={form.type}
-                onChange={(value) =>
+                options={[
+                  { value: "expense", label: "Expense" },
+                  { value: "income", label: "Income" },
+                ]}
+                onValueChange={(value) =>
                   setForm({ ...form, type: value as "income" | "expense" })
                 }
-              >
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
-              </Select>
+              />
             </div>
           )}
 
@@ -354,10 +289,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ userId }) => {
                 onClick={() => setShowColorPicker(!showColorPicker)}
                 className="w-full justify-between"
               >
-                <div
-                  className="w-6 h-6 rounded-full"
-                  style={{ backgroundColor: form.color }}
-                />
+                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: form.color }} />
                 <span className="text-xs text-gray-500">{form.color}</span>
               </Button>
               {showColorPicker && (
@@ -369,7 +301,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ userId }) => {
                         setForm({ ...form, color });
                         setShowColorPicker(false);
                       }}
-                      className="w-8 h-8 rounded-full border-2 border-gray-300 dark:border-gray-700 hover:border-gray-600 dark:hover:border-gray-400 transition-colors"
+                      className="w-8 h-8 rounded-full border-2 border-gray-300 dark:border-gray-700 hover:border-gray-600 transition-colors"
                       style={{ backgroundColor: color }}
                       title={color}
                     />
@@ -396,14 +328,6 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ userId }) => {
           </div>
         </div>
       </Modal>
-
-      {toast && (
-        <Toast
-          type={toast.type}
-          message={toast.message}
-          onClose={() => setToast(null)}
-        />
-      )}
     </>
   );
 };

@@ -36,7 +36,7 @@ export interface UseBudgetsActions {
   getBudgetById: (id: string) => Promise<Budget | null>;
   getBudgetsByCategory: (category: string) => Promise<Budget[]>;
   getBudgetsByPeriod: (period: string) => Promise<Budget[]>;
-  checkBudgetAlert: (categoryId: string, spent: number) => Promise<boolean>;
+  checkBudgetAlert: (categoryId: string, spent: number) => boolean;
 }
 
 export type UseBudgetsReturn = UseBudgetsState & UseBudgetsActions;
